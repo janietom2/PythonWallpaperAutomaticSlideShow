@@ -9,19 +9,12 @@ import time
 
 class ChangeWallpaper(Thread):
 
-    # tell application "Finder"
-    # set picture rotation to 1 -- turn on wallpaper cycling
-    # set change interval to -1 -- force a change to happen right now
-    # set desktop picture to POSIX file "%s"
-    # set picture rotation to 0  -- turn off wallpaper cycling
-    # end tell
-
     # Only for Darwin (MacOS)
     SCRIPT = """/usr/bin/osascript<<END
     tell application "System Events" to tell every desktop to set picture to "%s"
-    END"""
-
+    """
     kill = False
+    time = 300  # 5 Minutes
 
     def __init__(self, order):
         Thread.__init__(self)
@@ -47,6 +40,7 @@ class ChangeWallpaper(Thread):
         return display_list
 
     def run(self):
+        print(self.get_time())
         dir = "/Dropbox/AnimeWallpapers"
         home = expanduser("~")
         final_dir = home+""+dir
@@ -60,17 +54,26 @@ class ChangeWallpaper(Thread):
         c = 0
 
         while not status and c < len(wallpapers):
-            time.sleep(600)
+            time.sleep(self.get_time())
             status = self.get_kill_status()
             if(status):
                 break
-            print(status)
-            print(final_dir+"/"+wallpapers[c])
+            # print(status)
+            # print(final_dir+"/"+wallpapers[c])
             self.set_desktop_background(final_dir+"/"+wallpapers[c])
             status = self.get_kill_status()
             c += 1
             if c == len(wallpapers):
                 c = 0
 
+    def set_time(self, time_in_seconds):
+        self.time = time_in_seconds
+
     def get_kill_status(self):
         return self.kill
+
+    def get_time(self):
+        return self.time
+
+    def get_home(self):
+        return str(expanduser("~"))
