@@ -1,14 +1,16 @@
 import rumps
 import time
+from threading import Thread
 from ChangeWallpaper import ChangeWallpaper
 
 
 class AwesomeStatusBarApp(rumps.App):
 
-    # rumps.debug_mode(True)
+    rumps.debug_mode(True)
 
     cw = None
-    order = 1
+
+    t1 = None
 
     def __init__(self):
         super(AwesomeStatusBarApp, self).__init__(
@@ -17,6 +19,8 @@ class AwesomeStatusBarApp(rumps.App):
         self.menu = [
             ('Start'),
             ('Stop'),
+            ('Next'),
+            ('Resume'),
             None,
             ('Time', ('10 Seconds', '30 Seconds', '1 Minute',
                       '15 Minutes', '30 Minutes', '1 Hour', '3 Hours')),
@@ -24,11 +28,13 @@ class AwesomeStatusBarApp(rumps.App):
             None,
             ('About')
         ]
-
+        self.order = 1
         self.cw = ChangeWallpaper(self.order)
 
     @rumps.clicked("Start")
     def start_app(self, _):
+
+        self.cw.start()
 
         start_button = self.menu["Start"]
         start_button.set_callback(None)
@@ -36,27 +42,44 @@ class AwesomeStatusBarApp(rumps.App):
         stop_button = self.menu["Stop"]
         stop_button.set_callback(self.stop_app)
 
-        # print("Starting..")
-        self.cw.start()
         rumps.notification("Status", "Process Started",
                            "Wallpaper rotation has Started")
 
-        # rumps.alert("It has started")
+    @rumps.clicked("Next")
+    def next_wallpaper(self, _):
+        self.cw.go_to_next_wallpaper()
 
     @rumps.clicked("Shuffle")
     def do_shuffle(self, sender):
         sender.state = not sender.state
-        self.order = 0
+        if self.order == 1:
+            self.order = 0
+            self.cw.set_n_order(0)
+        else:
+            self.order = 1
+            self.cw.set_n_order(1)
+
+    @rumps.clicked("Resume")
+    def resume_app(self, _):
+        self.cw.resume()
+        self.cw.kill = False
+
+        stop_button = self.menu["Stop"]
+        stop_button.set_callback(self.stop_app)
+
+        start_button = self.menu["Resume"]
+        start_button.set_callback(None)
 
     def stop_app(self, _):
+
+        self.cw.kill = True
+        self.cw.pause()
+
         stop_button = self.menu["Stop"]
         stop_button.set_callback(None)
 
-        start_button = self.menu["Start"]
-        start_button.set_callback(self.start_app)
-
-        self.cw.kill = True
-        print(self.cw.time)
+        start_button = self.menu["Resume"]
+        start_button.set_callback(self.resume_app)
 
         rumps.notification("Status", "Process stopped",
                            "Wallpaper rotation has stopped")
