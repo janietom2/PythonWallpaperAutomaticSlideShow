@@ -11,6 +11,6 @@ WallPaperSlider is a software for MacOs to download (Via HTTP request) and rotat
 * User can change to the next wallpaper
 * User can stop the rotation
 
-# To Do:
+## To Do:
 * User can set the API of wallpaper website
 * User can set the category of the wallpapers
